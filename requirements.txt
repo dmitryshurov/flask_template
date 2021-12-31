@@ -1,9 +1,15 @@
 # dependencies
 flask
-redis # maybe remove
+flask-jwt-extended
+flask-marshmallow
+flask-sqlalchemy
+psycopg2-binary
+# flask-mail # maybe remove
+# marshmallow-sqlalchemy # maybe remove
+# redis # maybe remove
 
 # tools
-flake8
-flake8-isort
-isort
-mypy
+flake8 # maybe remove
+flake8-isort # maybe remove
+isort # maybe remove
+mypy # maybe remove
