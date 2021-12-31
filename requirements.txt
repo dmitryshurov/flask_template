@@ -1,0 +1,9 @@
+# dependencies
+flask
+redis # maybe remove
+
+# tools
+flake8
+flake8-isort
+isort
+mypy
