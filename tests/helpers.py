@@ -6,7 +6,7 @@ import psycopg2
 
 BASE_URL = f'http://nginx:{os.environ["BACKEND_INTERNAL_PORT"]}'
 
-DATABASE_TABLES = ['users', 'user_roles']
+DATABASE_TABLES = ['users', 'user_roles', 'token_blocklist']
 
 
 def get_password_hash(password):
