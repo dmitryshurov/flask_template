@@ -19,6 +19,10 @@ USER_DATA_2 = {
 
 USER_DATA_3 = {'email': 'dmitry.shurov@mail.ru', 'password': '1234567'}
 USER_DATA_4 = {'email': 'dmitry.shurov@mail.ru1', 'password': '123456'}
+USER_DATA_5 = {'email': 'dmitry.shurov@mail.ru', 'password': ''}
+USER_DATA_6 = {'email': '', 'password': ''}
+USER_DATA_7 = {'email': ''}
+USER_DATA_8 = {}
 
 
 def create_user(user_data, check_status=True, json=True):
@@ -84,3 +88,7 @@ def test_0002_create_user():
 
     check_login_failed(USER_DATA_3)
     check_login_failed(USER_DATA_4)
+    check_login_failed(USER_DATA_5)
+    check_login_failed(USER_DATA_6)
+    check_login_failed(USER_DATA_7)
+    check_login_failed(USER_DATA_8)
