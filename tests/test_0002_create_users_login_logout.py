@@ -83,21 +83,27 @@ def check_login_failed(user_data):
     assert response.json()['message'] == 'Bad email or password'
 
 
-def get_users(check_status=True):
-    response = login(ADMIN_DATA)
-    access_token = response.json()['access_token']
-
+def get_users(access_token, check_status=True):
     response = requests.get(f'{BASE_URL}/users', headers={'Authorization': f'Bearer {access_token}'})
     if check_status:
         response.raise_for_status()
     return response
 
 
+def get_access_token(response):
+    return response.json()['access_token']
+
+
+def login_and_get_users(check_status=True):
+    access_token = get_access_token(login(ADMIN_DATA))
+    return get_users(access_token, check_status)
+
+
 def get_num_users():
-    return len(get_users().json()['users'])
+    return len(login_and_get_users().json()['users'])
 
 
-def test_0002_create_users_and_login():
+def test_0002_create_users_login_logout():
     assert get_num_users() == 1  # Admin is already here
 
     create_user(USER_DATA_1)
@@ -121,3 +127,17 @@ def test_0002_create_users_and_login():
     # check_login_failed(USER_DATA_6)
     # check_login_failed(USER_DATA_7)
     # check_login_failed(USER_DATA_8)
+
+    response = get_users('', check_status=False)
+    assert response.status_code == 422
+
+    access_token = get_access_token(login(USER_DATA_1))
+    response = get_users(access_token, check_status=False)
+    assert response.status_code == 401
+
+    access_token = get_access_token(login(ADMIN_DATA))
+    response = get_users(access_token)
+
+    logout(access_token)
+    response = get_users(access_token, check_status=False)
+    assert response.status_code == 401
