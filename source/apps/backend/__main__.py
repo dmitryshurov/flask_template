@@ -7,7 +7,7 @@ from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity
 from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import fields, post_load
-from sqlalchemy import Column, Float, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 
 app = Flask(__name__)
@@ -86,11 +86,13 @@ def index():
 @app.route('/users', methods=['GET'])
 @jwt_required()
 def get_users():
-    current_user = get_jwt_identity()
-    current_user_db = User.query.filter_by(email=current_user).one()
-    if current_user_db.role != 'admin':
+    current_user_email = get_jwt_identity()
+    current_user = User.query.filter_by(email=current_user_email).one()
+
+    if current_user.role != 'admin':
         return {'message': "Not found"}, 401
-    return {'users': users_schema.dump(User.query.all())}
+    else:
+        return {'users': users_schema.dump(User.query.all())}
 
 
 def get_json_or_form_data(request):
