@@ -15,6 +15,7 @@
 ```
 cp .env_template .env
 ```
+
 3. Generate a secret key and copy it to the `.env` file's SECRET_KEY variable
 ```
 openssl rand -hex 32
