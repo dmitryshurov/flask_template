@@ -30,8 +30,13 @@ docker-compose up -d --build
 
 ### Test
 
-After running the project as described above, just run:
+After running the project as described above, just run all tests:
 
 ```
 ./run_tests.sh
+```
+
+To run a single test, specify a mask for a test name as an argument, e.g.:
+```
+./run_tests.sh 0001
 ```

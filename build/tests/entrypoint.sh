@@ -1,0 +1,1 @@
+pytest -v --setup-show --tb=long tests -k " ${TESTS_MASK} "
