@@ -1,11 +1,12 @@
 import os
 import uuid
+from hashlib import md5
 
 from flask import Flask, request
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required
 from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
-from marshmallow import fields
+from marshmallow import fields, post_load
 from sqlalchemy import Column, Float, Integer, String, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -18,9 +19,10 @@ DATABASE_URL = 'postgresql://{user}:{password}@{host}:{port}/{database}'.format(
     port=os.environ['POSTGRES_PORT'],
     database=os.environ['POSTGRES_DB'],
 )
+SECRET_KEY = os.environ['SECRET_KEY']
 
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
-app.config['JWT_SECRET_KEY'] = os.environ['SECRET_KEY']
+app.config['JWT_SECRET_KEY'] = SECRET_KEY
 app.config['JSON_SORT_KEYS'] = False
 
 db = SQLAlchemy(app)
@@ -51,11 +53,20 @@ db.drop_all()
 db.create_all()
 
 
+def get_password_hash(password):
+    return md5((password + SECRET_KEY).encode('utf-8')).hexdigest()
+
+
 class UserSchema(ma.Schema):
     first_name = fields.String(required=True)
     last_name = fields.String(required=True)
     email = fields.Email(required=True)
     password = fields.String(required=True, load_only=True)
+
+    @post_load
+    def hash_password(self, data, **kwargs):
+        data['password'] = get_password_hash(data['password'])
+        return data
 
     class Meta:
         additional = ('id', 'uuid', 'role')
@@ -76,9 +87,17 @@ def get_users():
     return {'users': users_schema.dump(User.query.all())}
 
 
+def get_json_or_form_data(request):
+    if request.is_json:
+        return request.json
+    else:
+        return request.form
+
+
 @app.route('/users', methods=['POST'])
 def create_user():
-    user = user_schema.load(request.form)
+    request_data = get_json_or_form_data(request)
+    user = user_schema.load(request_data)
 
     existing_user_with_email = User.query.filter_by(email=user['email']).first()
     if existing_user_with_email:
@@ -88,4 +107,18 @@ def create_user():
         user_db = User(**user)
         db.session.add(user_db)
         db.session.commit()
-        return {'message': "User created successfully"}, 201
+        return {'message': 'User created successfully'}, 201
+
+
+@app.route('/users/login', methods=['POST'])
+def login():
+    request_data = get_json_or_form_data(request)
+    credentials = user_schema.load(request_data, partial=['first_name', 'last_name'])
+    print(f'Got credentials: {credentials}')
+
+    user_with_credentials = User.query.filter_by(**credentials).first()
+    if user_with_credentials:
+        access_token = create_access_token(identity=request_data['email'])
+        return {'message': 'Login succeeded!', 'access_token': access_token}
+    else:
+        return {'message': "Bad email or password"}, 401

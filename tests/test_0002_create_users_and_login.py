@@ -37,6 +37,15 @@ def get_num_users():
     return len(get_users().json()['users'])
 
 
+def login(email, password, check_status=True):
+    response = requests.post(f'{BASE_URL}/users/login', data={'email': email, 'password': password})
+    if check_status:
+        response.raise_for_status()
+        assert response.json()['message'] == 'Login succeeded!'
+        assert 'access_token' in response.json()
+    return response
+
+
 def test_0002_create_user():
     assert get_num_users() == 0
 
@@ -50,3 +59,5 @@ def test_0002_create_user():
     assert response.status_code == 409
     assert response.json() == {'message': 'User with this email already exists'}
     assert get_num_users() == 2
+
+    login(USER_DATA_1['email'], USER_DATA_1['password'])
