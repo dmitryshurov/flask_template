@@ -1,1 +1,1 @@
-docker run --network=host --rm -it $(docker build -q -f build/tests/Dockerfile .)
+docker run --env-file .env --network=flask_template_default --rm -it $(docker build -q -f build/tests/Dockerfile .)
