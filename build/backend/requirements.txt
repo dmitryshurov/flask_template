@@ -1,0 +1,8 @@
+flask
+flask-jwt-extended
+flask-marshmallow
+flask-sqlalchemy
+psycopg2-binary
+# flask-mail
+# marshmallow-sqlalchemy
+# redis

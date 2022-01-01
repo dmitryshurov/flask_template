@@ -40,7 +40,7 @@ services:
       - .env
     build:
       context: .
-      dockerfile: build/Dockerfile.backend
+      dockerfile: build/backend/Dockerfile
     depends_on:
       - postgres
       - redis

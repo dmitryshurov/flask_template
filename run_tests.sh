@@ -1,0 +1,1 @@
+docker run --network=host --rm -it $(docker build -q -f build/tests/Dockerfile .)

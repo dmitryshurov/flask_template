@@ -4,9 +4,9 @@ RUN apt-get update -y
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3 python3-pip uwsgi-plugin-python3
 
 WORKDIR /src
-COPY requirements.txt requirements.txt
+COPY build/backend/requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 COPY ./source ./source
 COPY ./configs/uwsgi/backend.ini backend.ini
 
-CMD uwsgi --ini backend.ini
+ENTRYPOINT uwsgi --ini backend.ini
