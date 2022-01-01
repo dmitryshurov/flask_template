@@ -17,6 +17,9 @@ USER_DATA_2 = {
     'password': '123456',
 }
 
+USER_DATA_3 = {'email': 'dmitry.shurov@mail.ru', 'password': '1234567'}
+USER_DATA_4 = {'email': 'dmitry.shurov@mail.ru1', 'password': '123456'}
+
 
 def create_user(user_data, check_status=True, json=True):
     if json:
@@ -43,6 +46,12 @@ def login(user_data, check_status=True, json=True):
         assert response.json()['message'] == 'Login succeeded!'
         assert 'access_token' in response.json()
     return response
+
+
+def check_login_failed(user_data):
+    response = login(user_data, check_status=False)
+    assert response.status_code == 401
+    assert response.json()['message'] == 'Bad email or password'
 
 
 def get_users(check_status=True):
@@ -72,3 +81,6 @@ def test_0002_create_user():
 
     login(USER_DATA_1)
     login(USER_DATA_2, json=True)
+
+    check_login_failed(USER_DATA_3)
+    check_login_failed(USER_DATA_4)

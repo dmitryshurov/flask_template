@@ -101,7 +101,7 @@ def create_user():
 
     existing_user_with_email = User.query.filter_by(email=user['email']).first()
     if existing_user_with_email:
-        return {'message': 'User with this email already exists'}, 409
+        return {'error': 'User with this email already exists'}, 409
 
     else:
         user_db = User(**user)
@@ -121,4 +121,4 @@ def login():
         access_token = create_access_token(identity=request_data['email'])
         return {'message': 'Login succeeded!', 'access_token': access_token}
     else:
-        return {'message': "Bad email or password"}, 401
+        return {'error': "Bad email or password"}, 401
