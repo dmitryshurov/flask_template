@@ -1,11 +1,16 @@
 import os
 from contextlib import contextmanager
+from hashlib import md5
 
 import psycopg2
 
 BASE_URL = f'http://nginx:{os.environ["BACKEND_INTERNAL_PORT"]}'
 
 DATABASE_TABLES = ['users', 'user_roles']
+
+
+def get_password_hash(password):
+    return md5((password + os.environ['SECRET_KEY']).encode('utf-8')).hexdigest()
 
 
 @contextmanager
@@ -43,5 +48,5 @@ def add_admin_user_to_database():
     with connect_to_db() as db:
         db.execute("INSERT INTO users (uuid, first_name, last_name, email, password, role) "
                    "VALUES ('fc23b6f2-6485-4b06-a43c-8b3409a7b34d' , 'Admin', 'Tester', "
-                   "'admin@admin.com', '', 'admin')"
+                   f"'admin@admin.com', '{get_password_hash('123456')}', 'admin')"
                    )

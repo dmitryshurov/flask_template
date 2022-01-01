@@ -3,7 +3,7 @@ import uuid
 from hashlib import md5
 
 from flask import Flask, request
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required
+from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required
 from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import fields, post_load
@@ -61,7 +61,7 @@ class UserSchema(ma.Schema):
     first_name = fields.String(required=True)
     last_name = fields.String(required=True)
     email = fields.Email(required=True)
-    password = fields.String(required=True, load_only=True)
+    password = fields.String(required=True)  #, load_only=True)
     role = fields.String(dump_only=True)
 
     @post_load
@@ -84,7 +84,12 @@ def index():
 
 
 @app.route('/users', methods=['GET'])
+@jwt_required()
 def get_users():
+    current_user = get_jwt_identity()
+    current_user_db = User.query.filter_by(email=current_user).one()
+    if current_user_db.role != 'admin':
+        return {'message': "Not found"}, 401
     return {'users': users_schema.dump(User.query.all())}
 
 
@@ -116,6 +121,7 @@ def login():
     request_data = get_json_or_form_data(request)
     credentials = user_schema.load(request_data, partial=['first_name', 'last_name'])
     print(f'Got credentials: {credentials}')
+    print('Admin is: ', user_schema.dump(User.query.filter_by(email='admin@admin.com').one()))
 
     user_with_credentials = User.query.filter_by(**credentials).first()
     if user_with_credentials:

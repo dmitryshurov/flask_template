@@ -31,6 +31,11 @@ USER_DATA_9 = {
     'password': '1234',
 }
 
+ADMIN_DATA = {
+    'email': 'admin@admin.com',
+    'password': '123456',
+}
+
 
 def create_user(user_data, check_status=True, json=True):
     if json:
@@ -72,7 +77,10 @@ def check_login_failed(user_data):
 
 
 def get_users(check_status=True):
-    response = requests.get(f'{BASE_URL}/users')
+    response = login(ADMIN_DATA)
+    access_token = response.json()['access_token']
+
+    response = requests.get(f'{BASE_URL}/users', headers={'Authorization': f'Bearer {access_token}'})
     if check_status:
         response.raise_for_status()
     return response
