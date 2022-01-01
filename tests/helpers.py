@@ -5,7 +5,7 @@ import psycopg2
 
 BASE_URL = f'http://nginx:{os.environ["BACKEND_INTERNAL_PORT"]}'
 
-DATABASE_TABLES = ['users']
+DATABASE_TABLES = ['users', 'user_roles']
 
 
 @contextmanager

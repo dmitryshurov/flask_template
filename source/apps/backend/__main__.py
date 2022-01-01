@@ -6,7 +6,7 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required
 from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import fields
-from sqlalchemy import Column, Float, Integer, String
+from sqlalchemy import Column, Float, Integer, String, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 
 app = Flask(__name__)
@@ -28,17 +28,26 @@ ma = Marshmallow(app)
 jwt = JWTManager(app)
 
 
+class UserRole(db.Model):
+    __tablename__ = 'user_roles'
+
+    id = Column(String, primary_key=True)
+    title = Column(String)
+
+
 class User(db.Model):
     __tablename__ = 'users'
 
-    id = Column(Integer)
-    uuid = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    uuid = Column(UUID(as_uuid=True), default=uuid.uuid4)
     first_name = Column(String)
     last_name = Column(String)
     email = Column(String, unique=True)
     password = Column(String)
+    role = Column(String, ForeignKey('user_roles.id'))
 
 
+db.drop_all()
 db.create_all()
 
 
@@ -49,7 +58,7 @@ class UserSchema(ma.Schema):
     password = fields.String(required=True, load_only=True)
 
     class Meta:
-        additional = ('id', 'uuid')
+        additional = ('id', 'uuid', 'role')
         ordered = True
 
 

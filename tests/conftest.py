@@ -7,4 +7,4 @@ from .helpers import clear_all_tables_in_database
 def clear_database():
     clear_all_tables_in_database()
     yield
-    clear_all_tables_in_database()
+    # clear_all_tables_in_database()
