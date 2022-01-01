@@ -22,6 +22,7 @@ def create_user(user_data, check_status=True):
     response = requests.post(f'{BASE_URL}/users', data=user_data)
     if check_status:
         response.raise_for_status()
+        assert response.json() == {"message": "User created successfully"}
     return response
 
 
@@ -32,7 +33,7 @@ def get_users(check_status=True):
     return response
 
 
-def get_num_users(check_status=True):
+def get_num_users():
     return len(get_users().json()['users'])
 
 
@@ -40,11 +41,9 @@ def test_0002_create_user():
     assert get_num_users() == 0
 
     response = create_user(USER_DATA_1)
-    assert response.json() == {"message": "User created successfully"}
     assert get_num_users() == 1
 
     response = create_user(USER_DATA_2)
-    assert response.json() == {"message": "User created successfully"}
     assert get_num_users() == 2
 
     response = create_user(USER_DATA_1, check_status=False)
