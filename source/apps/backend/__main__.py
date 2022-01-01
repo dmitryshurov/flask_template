@@ -31,8 +31,8 @@ jwt = JWTManager(app)
 class User(db.Model):
     __tablename__ = 'users'
 
-    id = Column(Integer, primary_key=True)
-    uuid = db.Column(UUID(as_uuid=True), default=uuid.uuid4)
+    id = Column(Integer)
+    uuid = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     first_name = Column(String)
     last_name = Column(String)
     email = Column(String, unique=True)
