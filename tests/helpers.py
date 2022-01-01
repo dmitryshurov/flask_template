@@ -31,3 +31,8 @@ def clear_all_tables_in_database():
     with connect_to_db() as db:
         for table in DATABASE_TABLES:
             db.execute(f'DELETE FROM {table}')
+
+
+def add_user_roles_to_database():
+    with connect_to_db() as db:
+        db.execute("INSERT INTO user_roles (id, title) VALUES ('user', 'User')")
