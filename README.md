@@ -2,7 +2,7 @@
 
 ## Quickstart
 
-### Prerequisities
+### Prerequisites
 
 * Linux
 * Docker
@@ -25,4 +25,12 @@ openssl rand -hex 32
 5. Run the project
 ```
 docker-compose up -d --build
+```
+
+### Test
+
+After running the project as described above, just run:
+
+```
+./run_tests.sh
 ```
