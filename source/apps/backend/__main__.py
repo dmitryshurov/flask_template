@@ -3,7 +3,7 @@ import uuid
 from hashlib import md5
 
 from flask import Flask, request
-from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required
+from flask_jwt_extended import JWTManager, create_access_token, get_jwt, get_jwt_identity, jwt_required
 from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import fields, post_load
@@ -49,12 +49,26 @@ class User(db.Model):
     role = Column(String, ForeignKey('user_roles.id'), default='user')
 
 
+class TokenBlocklist(db.Model):
+    __tablename__ = 'token_blocklist'
+
+    id = db.Column(db.Integer, primary_key=True)
+    jti = db.Column(db.String, nullable=False)
+
+
 db.drop_all()
 db.create_all()
 
 
 def get_password_hash(password):
     return md5((password + SECRET_KEY).encode('utf-8')).hexdigest()
+
+
+@jwt.token_in_blocklist_loader
+def check_if_token_revoked(jwt_header, jwt_payload):
+    jti = jwt_payload["jti"]
+    token = db.session.query(TokenBlocklist.id).filter_by(jti=jti).scalar()
+    return token is not None
 
 
 class UserSchema(ma.Schema):
@@ -129,3 +143,12 @@ def login():
         return {'message': 'Login succeeded!', 'access_token': access_token}
     else:
         return {'message': "Bad email or password"}, 401
+
+
+@app.route("/users/logout", methods=["POST"])
+@jwt_required()
+def modify_token():
+    jti = get_jwt()["jti"]
+    db.session.add(TokenBlocklist(jti=jti))
+    db.session.commit()
+    return {'msg': 'Logout successful'}

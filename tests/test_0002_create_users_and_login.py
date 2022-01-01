@@ -64,6 +64,13 @@ def login(user_data, check_status=True, json=True):
     return response
 
 
+def logout(access_token, check_status=True):
+    response = requests.post(f'{BASE_URL}/users/logout', headers={'Authorization': f'Bearer {access_token}'})
+    if check_status:
+        response.raise_for_status()
+    return response
+
+
 def check_failed_to_create_a_user_with_existing_email(user_data):
     response = create_user(user_data, check_status=False)
     assert response.status_code == 409
