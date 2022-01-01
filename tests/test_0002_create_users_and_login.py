@@ -83,19 +83,19 @@ def get_num_users():
 
 
 def test_0002_create_users_and_login():
-    assert get_num_users() == 0
+    assert get_num_users() == 1  # Admin is already here
 
     create_user(USER_DATA_1)
-    assert get_num_users() == 1
+    assert get_num_users() == 2
 
     create_user(USER_DATA_2, json=True)
-    assert get_num_users() == 2
+    assert get_num_users() == 3
 
     check_failed_to_create_a_user_with_existing_email(USER_DATA_1)
-    assert get_num_users() == 2
+    assert get_num_users() == 3
 
     check_failed_to_create_a_user_with_existing_email(USER_DATA_9)
-    assert get_num_users() == 2
+    assert get_num_users() == 3
 
     login(USER_DATA_1)
     login(USER_DATA_2, json=True)

@@ -36,3 +36,12 @@ def clear_all_tables_in_database():
 def add_user_roles_to_database():
     with connect_to_db() as db:
         db.execute("INSERT INTO user_roles (id, title) VALUES ('user', 'User')")
+        db.execute("INSERT INTO user_roles (id, title) VALUES ('admin', 'Admin')")
+
+
+def add_admin_user_to_database():
+    with connect_to_db() as db:
+        db.execute("INSERT INTO users (uuid, first_name, last_name, email, password, role) "
+                   "VALUES ('fc23b6f2-6485-4b06-a43c-8b3409a7b34d' , 'Admin', 'Tester', "
+                   "'admin@admin.com', '', 'admin')"
+                   )
