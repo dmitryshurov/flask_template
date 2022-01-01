@@ -18,11 +18,30 @@ USER_DATA_2 = {
 }
 
 
-def create_user(user_data, check_status=True):
-    response = requests.post(f'{BASE_URL}/users', data=user_data)
+def create_user(user_data, check_status=True, json=True):
+    if json:
+        response = requests.post(f'{BASE_URL}/users', json=user_data)
+    else:
+        response = requests.post(f'{BASE_URL}/users', data=user_data)
+
     if check_status:
         response.raise_for_status()
         assert response.json() == {"message": "User created successfully"}
+    return response
+
+
+def login(user_data, check_status=True, json=True):
+    login_user_data = {'email': user_data['email'], 'password': user_data['password']}
+
+    if json:
+        response = requests.post(f'{BASE_URL}/users/login', json=login_user_data)
+    else:
+        response = requests.post(f'{BASE_URL}/users/login', data=login_user_data)
+
+    if check_status:
+        response.raise_for_status()
+        assert response.json()['message'] == 'Login succeeded!'
+        assert 'access_token' in response.json()
     return response
 
 
@@ -37,22 +56,13 @@ def get_num_users():
     return len(get_users().json()['users'])
 
 
-def login(email, password, check_status=True):
-    response = requests.post(f'{BASE_URL}/users/login', data={'email': email, 'password': password})
-    if check_status:
-        response.raise_for_status()
-        assert response.json()['message'] == 'Login succeeded!'
-        assert 'access_token' in response.json()
-    return response
-
-
 def test_0002_create_user():
     assert get_num_users() == 0
 
     response = create_user(USER_DATA_1)
     assert get_num_users() == 1
 
-    response = create_user(USER_DATA_2)
+    response = create_user(USER_DATA_2, json=True)
     assert get_num_users() == 2
 
     response = create_user(USER_DATA_1, check_status=False)
@@ -60,4 +70,5 @@ def test_0002_create_user():
     assert response.json() == {'message': 'User with this email already exists'}
     assert get_num_users() == 2
 
-    login(USER_DATA_1['email'], USER_DATA_1['password'])
+    login(USER_DATA_1)
+    login(USER_DATA_2, json=True)
