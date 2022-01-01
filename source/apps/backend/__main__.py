@@ -44,7 +44,7 @@ class User(db.Model):
     uuid = Column(UUID(as_uuid=True), default=uuid.uuid4)
     first_name = Column(String)
     last_name = Column(String)
-    email = Column(String, unique=True)
+    email = Column(String, unique=True, index=True)
     password = Column(String)
     role = Column(String, ForeignKey('user_roles.id'), default='user')
 
@@ -53,7 +53,7 @@ class TokenBlocklist(db.Model):
     __tablename__ = 'token_blocklist'
 
     id = db.Column(db.Integer, primary_key=True)
-    jti = db.Column(db.String, nullable=False)
+    jti = db.Column(db.String, nullable=False, index=True)
 
 
 db.drop_all()
