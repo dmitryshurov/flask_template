@@ -1,13 +1,14 @@
 import os
 import uuid
+from functools import wraps
 from hashlib import md5
 
 from flask import Flask, request
-from flask_jwt_extended import JWTManager, create_access_token, get_jwt, get_jwt_identity, jwt_required
+from flask_jwt_extended import JWTManager, create_access_token, get_jwt, get_jwt_identity, jwt_required, verify_jwt_in_request
 from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import fields, post_load
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 
 app = Flask(__name__)
@@ -46,7 +47,8 @@ class User(db.Model):
     last_name = Column(String)
     email = Column(String, unique=True, index=True)
     password = Column(String)
-    role = Column(String, ForeignKey('user_roles.id'), default='user')
+    role = Column(String, ForeignKey('user_roles.id'), server_default='user')
+    is_active = Column(Boolean, server_default='TRUE')
 
 
 class TokenBlocklist(db.Model):
@@ -77,6 +79,7 @@ class UserSchema(ma.Schema):
     email = fields.Email(required=True)
     password = fields.String(required=True, load_only=True)
     role = fields.String(dump_only=True)
+    is_active = fields.Boolean(dump_only=True)
 
     @post_load
     def hash_password(self, data, **kwargs):
@@ -97,16 +100,46 @@ def index():
     return {'message': 'Hello'}
 
 
-@app.route('/users', methods=['GET'])
-@jwt_required()
-def get_users():
+def get_current_user():
     current_user_email = get_jwt_identity()
     current_user = User.query.filter_by(email=current_user_email).one()
 
-    if current_user.role != 'admin':
-        return {'message': "Not found"}, 401
-    else:
-        return {'users': users_schema.dump(User.query.all())}
+    return current_user
+
+
+def auth_required(roles_required=None, optional=False, fresh=False, refresh=False, locations=None):
+    def wrapper(fn):
+        @wraps(fn)
+        def decorator(*args, **kwargs):
+            verify_jwt_in_request(optional, fresh, refresh, locations)
+
+            # if isinstance(roles_required, str):
+            #     roles_required = [roles_required]
+
+            current_user = get_current_user()
+
+            if not current_user.is_active:
+                print('User is not active')
+                return {'message': "Access denied"}, 401
+
+            if roles_required is None:
+                return fn(*args, **kwargs)
+
+            if current_user.role not in roles_required:
+                print(f'User is not in {roles_required}')
+                return {'message': "Access denied"}, 401
+            else:
+                return fn(*args, **kwargs)
+
+        return decorator
+
+    return wrapper
+
+
+@app.route('/users', methods=['GET'])
+@auth_required(['admin'])
+def get_users():
+    return {'users': users_schema.dump(User.query.all())}
 
 
 def get_json_or_form_data(request):
