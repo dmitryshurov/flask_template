@@ -193,4 +193,4 @@ def user_logout():
     jti = get_jwt()["jti"]
     db.session.add(TokenBlocklist(jti=jti))
     db.session.commit()
-    return {'msg': 'Logout succeded'}
+    return {'message': 'Logout succeeded'}

@@ -68,6 +68,7 @@ def logout(access_token, check_status=True):
     response = requests.post(f'{BASE_URL}/users/logout', headers={'Authorization': f'Bearer {access_token}'})
     if check_status:
         response.raise_for_status()
+        assert response.json()['message'] == 'Logout succeeded'
     return response
 
 
