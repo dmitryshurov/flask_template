@@ -45,8 +45,7 @@ services:
       - postgres
       - redis
     expose:
-      - ${BACKEND_INTERNAL_PORT}
-      - 3716
+      - ${BACKEND_UWSGI_PORT}
 
   nginx:
     image: nginx:1.21-alpine
