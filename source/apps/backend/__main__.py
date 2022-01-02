@@ -4,11 +4,18 @@ from functools import wraps
 from hashlib import md5
 
 from flask import Flask, request
-from flask_jwt_extended import JWTManager, create_access_token, current_user, get_jwt, get_jwt_identity, jwt_required, verify_jwt_in_request
+from flask_jwt_extended import (
+    JWTManager,
+    create_access_token,
+    current_user,
+    get_jwt,
+    jwt_required,
+    verify_jwt_in_request
+)
 from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import fields, post_load
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
 
 app = Flask(__name__)
