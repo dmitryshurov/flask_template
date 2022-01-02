@@ -59,7 +59,7 @@ def login(user_data, check_status=True, json=True):
 
     if check_status:
         response.raise_for_status()
-        assert response.json()['message'] == 'Login succeeded!'
+        assert response.json()['message'] == 'Login succeeded'
         assert 'access_token' in response.json()
     return response
 
@@ -80,7 +80,7 @@ def check_failed_to_create_a_user_with_existing_email(user_data):
 def check_login_failed(user_data):
     response = login(user_data, check_status=False)
     assert response.status_code == 401
-    assert response.json()['message'] == 'Bad email or password'
+    assert response.json()['message'] == 'Login failed'
 
 
 def get_users(access_token, check_status=True):
