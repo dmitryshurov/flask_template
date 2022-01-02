@@ -17,7 +17,6 @@ from flask_sqlalchemy import SQLAlchemy
 from marshmallow import fields
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.sql.expression import delete
 
 app = Flask(__name__)
 
