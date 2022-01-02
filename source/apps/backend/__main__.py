@@ -102,11 +102,6 @@ user_schema = UserSchema()
 users_schema = UserSchema(many=True)
 
 
-@app.route('/')
-def index():
-    return {'message': 'Hello'}
-
-
 @jwt.user_lookup_loader
 def user_lookup_callback(_, jwt_data):
     current_user_email = jwt_data["sub"]
@@ -148,6 +143,11 @@ def get_json_or_form_data(request):
         return request.form
 
 
+@app.route('/')
+def index():
+    return {'message': 'Hello'}
+
+
 @app.route('/users', methods=['GET'])
 @auth_required(['admin'])
 def get_users():
@@ -182,9 +182,9 @@ def user_login():
     user = User.query.filter_by(email=email).one_or_none()
     if user and check_password(password, user.hashed_password):
         access_token = create_access_token(identity=email)
-        return {'message': 'Login succeeded!', 'access_token': access_token}
+        return {'message': 'Login succeeded', 'access_token': access_token}
     else:
-        return {'message': "Bad email or password"}, 401
+        return {'message': "Login failed"}, 401
 
 
 @app.route("/users/logout", methods=["POST"])
@@ -193,4 +193,4 @@ def user_logout():
     jti = get_jwt()["jti"]
     db.session.add(TokenBlocklist(jti=jti))
     db.session.commit()
-    return {'msg': 'Logout successful'}
+    return {'msg': 'Logout succeded'}
