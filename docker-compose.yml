@@ -21,7 +21,7 @@ services:
     volumes:
       - pgadmin:/root/.pgadmin
     expose:
-      - ${PGADMIN_PUBLIC_PORT}
+      - ${PGADMIN_LISTEN_PORT}
     depends_on:
       - postgres
 
@@ -55,8 +55,8 @@ services:
       context: .
       dockerfile: build/nginx/Dockerfile
     ports:
-      - ${BACKEND_PUBLIC_PORT}
-      - ${PGADMIN_PUBLIC_PORT}
+      - ${BACKEND_PUBLIC_PORT}:${BACKEND_PUBLIC_PORT}
+      - ${PGADMIN_LISTEN_PORT}:${PGADMIN_LISTEN_PORT}
 
 volumes:
   pgdata:
