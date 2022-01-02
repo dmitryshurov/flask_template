@@ -1,8 +1,8 @@
 import os
 import uuid
 from functools import wraps
-from hashlib import md5
 
+import bcrypt
 from flask import Flask, request
 from flask_jwt_extended import (
     JWTManager,
@@ -14,7 +14,7 @@ from flask_jwt_extended import (
 )
 from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
-from marshmallow import fields, post_load
+from marshmallow import fields
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -70,7 +70,7 @@ db.create_all()
 
 
 def get_password_hash(password):
-    return md5((password + SECRET_KEY).encode('utf-8')).hexdigest()
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
 
 @jwt.token_in_blocklist_loader
@@ -87,11 +87,6 @@ class UserSchema(ma.Schema):
     password = fields.String(required=True, load_only=True)
     role = fields.String(dump_only=True)
     is_active = fields.Boolean(dump_only=True)
-
-    @post_load
-    def hash_password(self, data, **kwargs):
-        data['password'] = get_password_hash(data['password'])
-        return data
 
     class Meta:
         additional = ('id', 'uuid')
@@ -164,6 +159,7 @@ def create_user():
         return {'message': 'User with this email already exists'}, 409
 
     else:
+        user['password'] = get_password_hash(user['password']).decode('utf-8')
         user_db = User(**user)
         db.session.add(user_db)
         db.session.commit()
@@ -173,11 +169,12 @@ def create_user():
 @app.route('/users/login', methods=['POST'])
 def user_login():
     request_data = get_json_or_form_data(request)
-    credentials = user_schema.load(request_data, partial=['first_name', 'last_name'])
+    email = request_data['email']
+    password = request_data['password']
 
-    user_with_credentials = User.query.filter_by(**credentials).first()
-    if user_with_credentials:
-        access_token = create_access_token(identity=request_data['email'])
+    user = User.query.filter_by(email=email).one_or_none()
+    if user and bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
+        access_token = create_access_token(identity=email)
         return {'message': 'Login succeeded!', 'access_token': access_token}
     else:
         return {'message': "Bad email or password"}, 401
