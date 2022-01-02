@@ -4,7 +4,7 @@ from functools import wraps
 from hashlib import md5
 
 from flask import Flask, request
-from flask_jwt_extended import JWTManager, create_access_token, get_jwt, get_jwt_identity, jwt_required, verify_jwt_in_request
+from flask_jwt_extended import JWTManager, create_access_token, current_user, get_jwt, get_jwt_identity, jwt_required, verify_jwt_in_request
 from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import fields, post_load
@@ -100,46 +100,38 @@ def index():
     return {'message': 'Hello'}
 
 
-def get_current_user():
-    current_user_email = get_jwt_identity()
-    current_user = User.query.filter_by(email=current_user_email).one()
-
-    return current_user
+@jwt.user_lookup_loader
+def user_lookup_callback(_, jwt_data):
+    current_user_email = jwt_data["sub"]
+    return User.query.filter_by(email=current_user_email).one_or_none()
 
 
 def auth_required(roles_required=None, optional=False, fresh=False, refresh=False, locations=None):
     def wrapper(fn):
         @wraps(fn)
         def decorator(*args, **kwargs):
+            def access_denied():
+                return {'message': "Access denied"}, 401
+
             verify_jwt_in_request(optional, fresh, refresh, locations)
 
-            # if isinstance(roles_required, str):
-            #     roles_required = [roles_required]
-
-            current_user = get_current_user()
+            if not current_user:
+                return access_denied()
 
             if not current_user.is_active:
-                print('User is not active')
-                return {'message': "Access denied"}, 401
+                return access_denied()
 
             if roles_required is None:
                 return fn(*args, **kwargs)
 
             if current_user.role not in roles_required:
-                print(f'User is not in {roles_required}')
-                return {'message': "Access denied"}, 401
-            else:
-                return fn(*args, **kwargs)
+                return access_denied()
+
+            return fn(*args, **kwargs)
 
         return decorator
 
     return wrapper
-
-
-@app.route('/users', methods=['GET'])
-@auth_required(['admin'])
-def get_users():
-    return {'users': users_schema.dump(User.query.all())}
 
 
 def get_json_or_form_data(request):
@@ -147,6 +139,12 @@ def get_json_or_form_data(request):
         return request.json
     else:
         return request.form
+
+
+@app.route('/users', methods=['GET'])
+@auth_required(['admin'])
+def get_users():
+    return {'users': users_schema.dump(User.query.all())}
 
 
 @app.route('/users', methods=['POST'])
