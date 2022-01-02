@@ -133,7 +133,7 @@ def create_user():
 
 
 @app.route('/users/login', methods=['POST'])
-def login():
+def user_login():
     request_data = get_json_or_form_data(request)
     credentials = user_schema.load(request_data, partial=['first_name', 'last_name'])
 
@@ -147,7 +147,7 @@ def login():
 
 @app.route("/users/logout", methods=["POST"])
 @jwt_required()
-def modify_token():
+def user_logout():
     jti = get_jwt()["jti"]
     db.session.add(TokenBlocklist(jti=jti))
     db.session.commit()
