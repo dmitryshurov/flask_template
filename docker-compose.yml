@@ -21,7 +21,7 @@ services:
     volumes:
       - pgadmin:/root/.pgadmin
     expose:
-      - ${PGADMIN_LISTEN_PORT}
+      - ${PGADMIN_PUBLIC_PORT}
     depends_on:
       - postgres
 
@@ -48,15 +48,15 @@ services:
       - ${BACKEND_UWSGI_PORT}
 
   nginx:
-    image: nginx:1.21-alpine
     restart: always
     env_file:
       - .env
-    volumes:
-      - ./configs/nginx/conf.d:/etc/nginx/conf.d
+    build:
+      context: .
+      dockerfile: build/nginx/Dockerfile
     ports:
-      - "${BACKEND_EXTERNAL_PORT}:${BACKEND_INTERNAL_PORT}"
-      - "${PGADMIN_EXTERNAL_PORT}:${PGADMIN_LISTEN_PORT}"
+      - ${BACKEND_PUBLIC_PORT}
+      - ${PGADMIN_PUBLIC_PORT}
 
 volumes:
   pgdata:

@@ -4,7 +4,7 @@ from contextlib import contextmanager
 import bcrypt
 import psycopg2
 
-BASE_URL = f'http://nginx:{os.environ["BACKEND_INTERNAL_PORT"]}'
+BASE_URL = f'http://nginx:{os.environ["BACKEND_PUBLIC_PORT"]}'
 
 DATABASE_TABLES = ['users', 'user_roles', 'token_blocklist']
 
