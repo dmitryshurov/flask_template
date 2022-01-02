@@ -17,6 +17,7 @@ from flask_sqlalchemy import SQLAlchemy
 from marshmallow import fields
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.sql.expression import delete
 
 app = Flask(__name__)
 
@@ -53,7 +54,7 @@ class User(db.Model):
     first_name = Column(String)
     last_name = Column(String)
     email = Column(String, unique=True, index=True)
-    password = Column(String)
+    hashed_password = Column(String)
     role = Column(String, ForeignKey('user_roles.id'), server_default='user')
     is_active = Column(Boolean, server_default='TRUE')
 
@@ -70,7 +71,12 @@ db.create_all()
 
 
 def get_password_hash(password):
-    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+    num_rounds = int(os.environ['BCRYPT_NUM_ROUNDS'])
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt(rounds=num_rounds)).decode('utf-8')
+
+
+def check_password(password, hash):
+    return bcrypt.checkpw(password.encode('utf-8'), hash.encode('utf-8'))
 
 
 @jwt.token_in_blocklist_loader
@@ -159,7 +165,9 @@ def create_user():
         return {'message': 'User with this email already exists'}, 409
 
     else:
-        user['password'] = get_password_hash(user['password']).decode('utf-8')
+        user['hashed_password'] = get_password_hash(user['password'])
+        del user['password']
+
         user_db = User(**user)
         db.session.add(user_db)
         db.session.commit()
@@ -173,7 +181,7 @@ def user_login():
     password = request_data['password']
 
     user = User.query.filter_by(email=email).one_or_none()
-    if user and bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
+    if user and check_password(password, user.hashed_password):
         access_token = create_access_token(identity=email)
         return {'message': 'Login succeeded!', 'access_token': access_token}
     else:

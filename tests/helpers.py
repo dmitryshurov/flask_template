@@ -10,7 +10,8 @@ DATABASE_TABLES = ['users', 'user_roles', 'token_blocklist']
 
 
 def get_password_hash(password):
-    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+    num_rounds = int(os.environ['BCRYPT_NUM_ROUNDS'])
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt(rounds=num_rounds)).decode('utf-8')
 
 
 @contextmanager
@@ -46,7 +47,7 @@ def add_user_roles_to_database():
 
 def add_admin_user_to_database():
     with connect_to_db() as db:
-        db.execute("INSERT INTO users (uuid, first_name, last_name, email, password, role) "
+        db.execute("INSERT INTO users (uuid, first_name, last_name, email, hashed_password, role, is_active) "
                    "VALUES ('fc23b6f2-6485-4b06-a43c-8b3409a7b34d' , 'Admin', 'Tester', "
-                   f"'admin@admin.com', '{get_password_hash('123456').decode('utf-8')}', 'admin')"
+                   f"'admin@admin.com', '{get_password_hash('123456')}', 'admin', TRUE)"
                    )
