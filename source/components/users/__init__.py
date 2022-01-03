@@ -3,7 +3,7 @@ import uuid
 from functools import wraps
 
 import bcrypt
-from flask import Blueprint, request
+from flask import Blueprint, current_app as app, request
 from flask_jwt_extended import (
     create_access_token,
     current_user,
@@ -15,19 +15,17 @@ from marshmallow import fields
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
 
-from apps.backend.app import db, jwt, ma
-
 blueprint = Blueprint('users', __name__, url_prefix='/users')
 
 
-class UserRole(db.Model):
+class UserRole(app.db.Model):
     __tablename__ = 'user_roles'
 
     id = Column(String, primary_key=True)
     title = Column(String)
 
 
-class User(db.Model):
+class User(app.db.Model):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -40,11 +38,11 @@ class User(db.Model):
     is_active = Column(Boolean, server_default='TRUE')
 
 
-class TokenBlocklist(db.Model):
+class TokenBlocklist(app.db.Model):
     __tablename__ = 'token_blocklist'
 
-    id = db.Column(db.Integer, primary_key=True)
-    jti = db.Column(db.String, nullable=False, index=True)
+    id = app.db.Column(app.db.Integer, primary_key=True)
+    jti = app.db.Column(app.db.String, nullable=False, index=True)
 
 
 def get_password_hash(password):
@@ -56,20 +54,20 @@ def check_password(password, hash):
     return bcrypt.checkpw(password.encode('utf-8'), hash.encode('utf-8'))
 
 
-@jwt.token_in_blocklist_loader
+@app.jwt.token_in_blocklist_loader
 def check_if_token_revoked(jwt_header, jwt_payload):
     jti = jwt_payload["jti"]
-    token = db.session.query(TokenBlocklist.id).filter_by(jti=jti).scalar()
+    token = app.db.session.query(TokenBlocklist.id).filter_by(jti=jti).scalar()
     return token is not None
 
 
-@jwt.user_lookup_loader
+@app.jwt.user_lookup_loader
 def user_lookup_callback(_, jwt_data):
     current_user_email = jwt_data["sub"]
     return User.query.filter_by(email=current_user_email).one_or_none()
 
 
-class UserSchema(ma.Schema):
+class UserSchema(app.ma.Schema):
     first_name = fields.String(required=True)
     last_name = fields.String(required=True)
     email = fields.Email(required=True)
@@ -141,8 +139,8 @@ def create_user():
         del user['password']
 
         user_db = User(**user)
-        db.session.add(user_db)
-        db.session.commit()
+        app.db.session.add(user_db)
+        app.db.session.commit()
         return {'message': 'User created successfully'}, 201
 
 
@@ -164,6 +162,6 @@ def user_login():
 @jwt_required()
 def user_logout():
     jti = get_jwt()["jti"]
-    db.session.add(TokenBlocklist(jti=jti))
-    db.session.commit()
+    app.db.session.add(TokenBlocklist(jti=jti))
+    app.db.session.commit()
     return {'message': 'Logout succeeded'}

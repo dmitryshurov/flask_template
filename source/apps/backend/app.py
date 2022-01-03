@@ -20,9 +20,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['JWT_SECRET_KEY'] = SECRET_KEY
 app.config['JSON_SORT_KEYS'] = False
 
-db = SQLAlchemy(app)
-ma = Marshmallow(app)
-jwt = JWTManager(app)
+app.db = SQLAlchemy(app)
+app.ma = Marshmallow(app)
+app.jwt = JWTManager(app)
 
 
 @app.route('/')

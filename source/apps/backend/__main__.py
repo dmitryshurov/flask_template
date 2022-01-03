@@ -1,10 +1,13 @@
-from .app import app, db
-from components import users
+from .app import app
 
-app.register_blueprint(users.blueprint)
+with app.app_context():
+    from components import todo_list, users
 
-db.drop_all()
-db.create_all()
+    app.register_blueprint(todo_list.blueprint)
+    app.register_blueprint(users.blueprint)
+
+app.db.drop_all()
+app.db.create_all()
 
 if __name__ == '__main__':
     app.run()
