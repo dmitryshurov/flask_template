@@ -30,7 +30,7 @@ docker-compose up -d --build
 
 ### Test
 
-After running the project as described above, just run all tests:
+After running the project as described above, just run all tests (it may take some time to build Docker image during the first run):
 
 ```
 ./run_tests.sh
