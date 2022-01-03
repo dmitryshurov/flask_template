@@ -8,6 +8,3 @@ with app.app_context():
 
 app.db.drop_all()
 app.db.create_all()
-
-if __name__ == '__main__':
-    app.run()
