@@ -1,115 +1,13 @@
-import os
-import uuid
-from functools import wraps
-
-import bcrypt
 from flask import Blueprint, current_app as app, request
-from flask_jwt_extended import (
-    create_access_token,
-    current_user,
-    get_jwt,
-    jwt_required,
-    verify_jwt_in_request
-)
-from marshmallow import fields
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
-from sqlalchemy.dialects.postgresql import UUID
+from flask_jwt_extended import create_access_token, get_jwt, jwt_required
+
+from . import jwt_hooks
+from .decorators import auth_required
+from .models import TokenBlocklist, User
+from .password_utils import check_password, get_password_hash
+from .schemas import user_schema, users_schema
 
 blueprint = Blueprint('users', __name__, url_prefix='/users')
-
-
-class UserRole(app.db.Model):
-    __tablename__ = 'user_roles'
-
-    id = Column(String, primary_key=True)
-    title = Column(String)
-
-
-class User(app.db.Model):
-    __tablename__ = 'users'
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    uuid = Column(UUID(as_uuid=True), default=uuid.uuid4)
-    first_name = Column(String)
-    last_name = Column(String)
-    email = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
-    role = Column(String, ForeignKey('user_roles.id'), server_default='user')
-    is_active = Column(Boolean, server_default='TRUE')
-
-
-class TokenBlocklist(app.db.Model):
-    __tablename__ = 'token_blocklist'
-
-    id = app.db.Column(app.db.Integer, primary_key=True)
-    jti = app.db.Column(app.db.String, nullable=False, index=True)
-
-
-def get_password_hash(password):
-    num_rounds = int(os.environ['BCRYPT_NUM_ROUNDS'])
-    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt(rounds=num_rounds)).decode('utf-8')
-
-
-def check_password(password, hash):
-    return bcrypt.checkpw(password.encode('utf-8'), hash.encode('utf-8'))
-
-
-@app.jwt.token_in_blocklist_loader
-def check_if_token_revoked(jwt_header, jwt_payload):
-    jti = jwt_payload["jti"]
-    token = app.db.session.query(TokenBlocklist.id).filter_by(jti=jti).scalar()
-    return token is not None
-
-
-@app.jwt.user_lookup_loader
-def user_lookup_callback(_, jwt_data):
-    current_user_email = jwt_data["sub"]
-    return User.query.filter_by(email=current_user_email).one_or_none()
-
-
-class UserSchema(app.ma.Schema):
-    first_name = fields.String(required=True)
-    last_name = fields.String(required=True)
-    email = fields.Email(required=True)
-    password = fields.String(required=True, load_only=True)
-    role = fields.String(dump_only=True)
-    is_active = fields.Boolean(dump_only=True)
-
-    class Meta:
-        additional = ('id', 'uuid')
-        ordered = True
-
-
-user_schema = UserSchema()
-users_schema = UserSchema(many=True)
-
-
-def auth_required(roles_required=None, optional=False, fresh=False, refresh=False, locations=None):
-    def wrapper(fn):
-        @wraps(fn)
-        def decorator(*args, **kwargs):
-            def access_denied():
-                return {'message': "Access denied"}, 401
-
-            verify_jwt_in_request(optional, fresh, refresh, locations)
-
-            if not current_user:
-                return access_denied()
-
-            if not current_user.is_active:
-                return access_denied()
-
-            if roles_required is None:
-                return fn(*args, **kwargs)
-
-            if current_user.role not in roles_required:
-                return access_denied()
-
-            return fn(*args, **kwargs)
-
-        return decorator
-
-    return wrapper
 
 
 def get_json_or_form_data(request):
