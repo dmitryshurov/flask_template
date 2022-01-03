@@ -4,10 +4,10 @@ RUN apt-get update -y
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3 python3-pip uwsgi-plugin-python3 gettext-base
 
 WORKDIR /src
-COPY ./build/backend/requirements.txt requirements.txt
+COPY ./build/services/backend/requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 COPY ./source ./source
-COPY ./configs/uwsgi/backend.ini backend.ini
-COPY ./build/envsubst.sh .
+COPY ./build/configs/uwsgi/backend.ini backend.ini
+COPY ./build/scripts/envsubst.sh .
 
 ENTRYPOINT ./envsubst.sh backend.ini && uwsgi --ini backend.ini

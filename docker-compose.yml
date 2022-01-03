@@ -40,7 +40,7 @@ services:
       - .env
     build:
       context: .
-      dockerfile: build/backend/Dockerfile
+      dockerfile: build/services/backend/Dockerfile
     depends_on:
       - postgres
       - redis
@@ -53,7 +53,7 @@ services:
       - .env
     build:
       context: .
-      dockerfile: build/nginx/Dockerfile
+      dockerfile: build/services/nginx/Dockerfile
     ports:
       - ${BACKEND_PUBLIC_PORT}:${BACKEND_PUBLIC_PORT}
       - ${PGADMIN_LISTEN_PORT}:${PGADMIN_LISTEN_PORT}
