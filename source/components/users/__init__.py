@@ -52,12 +52,15 @@ def create_user():
 
 @blueprint.route('/login', methods=['POST'])
 def user_login():
+    def login_failed():
+        return {'msg': 'Login failed'}, 401
+
     request_data = get_json_or_form_data(request)
     email = request_data.get('email')
     password = request_data.get('password')
 
     if not email or not password:
-        return {'msg': 'Login failed'}, 401
+        return login_failed()
 
     user = User.query.filter_by(email=email).one_or_none()
     if user and check_password(password, user.hashed_password):
@@ -66,7 +69,7 @@ def user_login():
         set_access_cookies(response, access_token)
         return response
     else:
-        return {'msg': 'Login failed'}, 401
+        return login_failed()
 
 
 @blueprint.route('/logout', methods=['POST'])
