@@ -63,8 +63,12 @@ def login(user_data, check_status=True, json=True):
     return response
 
 
-def logout(access_token, check_status=True):
-    response = requests.post(f'{BASE_URL}/users/logout', headers={'Authorization': f'Bearer {access_token}'})
+def logout(access_cookies, check_status=True):
+    response = requests.post(
+        f'{BASE_URL}/users/logout',
+        cookies=access_cookies,
+        headers={'X-CSRF-TOKEN': access_cookies.get('csrf_access_token')}
+    )
     if check_status:
         response.raise_for_status()
         assert response.json()['msg'] == 'Logout succeeded'
@@ -84,14 +88,18 @@ def check_login_failed(user_data):
 
 
 def get_users(access_cookies, check_status=True):
-    response = requests.get(f'{BASE_URL}/users', cookies=access_cookies)
+    response = requests.get(
+        f'{BASE_URL}/users',
+        cookies=access_cookies,
+        headers={'X-CSRF-TOKEN': access_cookies.get('csrf_access_token')}
+    )
     if check_status:
         response.raise_for_status()
     return response
 
 
 def login_and_get_users(check_status=True):
-    access_cookies = login(ADMIN_DATA).cookies
+    access_cookies = dict(login(ADMIN_DATA).cookies)
     return get_users(access_cookies, check_status)
 
 
@@ -124,14 +132,14 @@ def test_0001_create_users_login_logout():
     # check_login_failed(USER_DATA_7)
     # check_login_failed(USER_DATA_8)
 
-    response = get_users('', check_status=False)
-    assert response.status_code == 422
+    response = get_users({}, check_status=False)
+    assert response.status_code == 401
 
-    access_cookies = login(USER_DATA_1).cookies
+    access_cookies = dict(login(USER_DATA_1).cookies)
     response = get_users(access_cookies, check_status=False)
     assert response.status_code == 401
 
-    access_cookies = login(ADMIN_DATA).cookies
+    access_cookies = dict(login(ADMIN_DATA).cookies)
     response = get_users(access_cookies)
 
     logout(access_cookies)
