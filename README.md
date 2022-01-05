@@ -23,7 +23,7 @@ openssl rand -hex 32
 
 4. Fill the `.env` file with your settings
 
-5. Start the Docker stack
+5. Run the Docker stack
 ```
 docker-compose up -d --build
 ```
