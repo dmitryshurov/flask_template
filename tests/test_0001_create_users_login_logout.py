@@ -50,7 +50,7 @@ def create_user(user_data, check_status=True, json=True):
 
 
 def login(user_data, check_status=True, json=True):
-    login_user_data = {'email': user_data['email'], 'password': user_data['password']}
+    login_user_data = {k: v for k, v in user_data.items() if k in ['email', 'password']}
 
     if json:
         response = requests.post(f'{BASE_URL}/users/login', json=login_user_data)
@@ -129,8 +129,8 @@ def test_0001_create_users_login_logout():
     check_login_failed(USER_DATA_3)
     check_login_failed(USER_DATA_4)
     check_login_failed(USER_DATA_5)
-    # check_login_failed(USER_DATA_6)
-    # check_login_failed(USER_DATA_7)
+    check_login_failed(USER_DATA_6)
+    check_login_failed(USER_DATA_7)
     # check_login_failed(USER_DATA_8)
 
     response = get_users({}, check_status=False)

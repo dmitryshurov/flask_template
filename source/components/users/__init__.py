@@ -45,8 +45,11 @@ def create_user():
 @blueprint.route('/login', methods=['POST'])
 def user_login():
     request_data = get_json_or_form_data(request)
-    email = request_data['email']
-    password = request_data['password']
+    email = request_data.get('email')
+    password = request_data.get('password')
+
+    if not email or not password:
+        return {'msg': 'Login failed'}, 401
 
     user = User.query.filter_by(email=email).one_or_none()
     if user and check_password(password, user.hashed_password):
