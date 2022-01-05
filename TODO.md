@@ -6,3 +6,5 @@
 - No DB create and cleanup at statrup. Do that in tests properly
 - Class-based views, flask-restful?
 - SQL validations and schema validations
+- Use sessions in tests
+- Flask best practices

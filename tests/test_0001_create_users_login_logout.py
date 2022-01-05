@@ -60,6 +60,7 @@ def login(user_data, check_status=True, json=True):
     if check_status:
         response.raise_for_status()
         assert response.json()['msg'] == 'Login succeeded'
+
     return response
 
 

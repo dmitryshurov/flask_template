@@ -1,7 +1,7 @@
 from flask import Blueprint, current_app as app, jsonify, request
 from flask_jwt_extended import create_access_token, get_jwt, jwt_required, set_access_cookies, unset_jwt_cookies
 
-from . import jwt_hooks  # noqa:F401
+from . import callbacks  # noqa:F401
 from .decorators import auth_required
 from .models import TokenBlocklist, User
 from .password_utils import check_password, get_password_hash

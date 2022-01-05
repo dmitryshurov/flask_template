@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 
 class Config:
@@ -9,6 +10,10 @@ class Config:
     JWT_SECRET_KEY = os.environ['SECRET_KEY']
     JWT_SESSION_COOKIE = False
     JWT_TOKEN_LOCATION = ['cookies']
+
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=1)
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
+    JWT_REFRESH_TOKEN_BEFORE = timedelta(hours=1)
 
     SQLALCHEMY_DATABASE_URI = 'postgresql://{user}:{password}@{host}:{port}/{database}'.format(
         user=os.environ['POSTGRES_USER'],
