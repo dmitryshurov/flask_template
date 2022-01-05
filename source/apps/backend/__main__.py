@@ -8,3 +8,8 @@ with app.app_context():
 
 app.db.drop_all()
 app.db.create_all()
+
+
+@app.cli.command('db_init')
+def db_init():
+    app.db.create_all()

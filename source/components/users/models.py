@@ -1,8 +1,5 @@
-import uuid
-
 from flask import current_app as app
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
-from sqlalchemy.dialects.postgresql import UUID
 
 
 class UserRole(app.db.Model):
@@ -16,7 +13,6 @@ class User(app.db.Model):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    uuid = Column(UUID(as_uuid=True), default=uuid.uuid4)
     first_name = Column(String)
     last_name = Column(String)
     email = Column(String, unique=True, index=True)

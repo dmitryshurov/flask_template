@@ -58,4 +58,4 @@ def create_todo_list():
     todo_list = TodoList(title='Test', user_id=1)
     app.db.session.add(todo_list)
     app.db.session.commit()
-    return {'message': 'TODO List created'}
+    return {'msg': 'TODO List created'}

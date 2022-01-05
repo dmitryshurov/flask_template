@@ -45,7 +45,7 @@ def create_user(user_data, check_status=True, json=True):
 
     if check_status:
         response.raise_for_status()
-        assert response.json() == {"message": "User created successfully"}
+        assert response.json() == {'msg': 'User created successfully'}
     return response
 
 
@@ -59,8 +59,7 @@ def login(user_data, check_status=True, json=True):
 
     if check_status:
         response.raise_for_status()
-        assert response.json()['message'] == 'Login succeeded'
-        assert 'access_token' in response.json()
+        assert response.json()['msg'] == 'Login succeeded'
     return response
 
 
@@ -68,43 +67,39 @@ def logout(access_token, check_status=True):
     response = requests.post(f'{BASE_URL}/users/logout', headers={'Authorization': f'Bearer {access_token}'})
     if check_status:
         response.raise_for_status()
-        assert response.json()['message'] == 'Logout succeeded'
+        assert response.json()['msg'] == 'Logout succeeded'
     return response
 
 
 def check_failed_to_create_a_user_with_existing_email(user_data):
     response = create_user(user_data, check_status=False)
     assert response.status_code == 409
-    assert response.json() == {'message': 'User with this email already exists'}
+    assert response.json() == {'msg': 'User with this email already exists'}
 
 
 def check_login_failed(user_data):
     response = login(user_data, check_status=False)
     assert response.status_code == 401
-    assert response.json()['message'] == 'Login failed'
+    assert response.json()['msg'] == 'Login failed'
 
 
-def get_users(access_token, check_status=True):
-    response = requests.get(f'{BASE_URL}/users', headers={'Authorization': f'Bearer {access_token}'})
+def get_users(access_cookies, check_status=True):
+    response = requests.get(f'{BASE_URL}/users', cookies=access_cookies)
     if check_status:
         response.raise_for_status()
     return response
 
 
-def get_access_token(response):
-    return response.json()['access_token']
-
-
 def login_and_get_users(check_status=True):
-    access_token = get_access_token(login(ADMIN_DATA))
-    return get_users(access_token, check_status)
+    access_cookies = login(ADMIN_DATA).cookies
+    return get_users(access_cookies, check_status)
 
 
 def get_num_users():
     return len(login_and_get_users().json()['users'])
 
 
-def test_0002_create_users_login_logout():
+def test_0001_create_users_login_logout():
     assert get_num_users() == 1  # Admin is already here
 
     create_user(USER_DATA_1)
@@ -132,13 +127,13 @@ def test_0002_create_users_login_logout():
     response = get_users('', check_status=False)
     assert response.status_code == 422
 
-    access_token = get_access_token(login(USER_DATA_1))
-    response = get_users(access_token, check_status=False)
+    access_cookies = login(USER_DATA_1).cookies
+    response = get_users(access_cookies, check_status=False)
     assert response.status_code == 401
 
-    access_token = get_access_token(login(ADMIN_DATA))
-    response = get_users(access_token)
+    access_cookies = login(ADMIN_DATA).cookies
+    response = get_users(access_cookies)
 
-    logout(access_token)
-    response = get_users(access_token, check_status=False)
+    logout(access_cookies)
+    response = get_users(access_cookies, check_status=False)
     assert response.status_code == 401

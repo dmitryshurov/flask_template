@@ -1,7 +1,7 @@
-from flask import Blueprint, current_app as app, request
-from flask_jwt_extended import create_access_token, get_jwt, jwt_required
+from flask import Blueprint, current_app as app, jsonify, request
+from flask_jwt_extended import create_access_token, get_jwt, jwt_required, set_access_cookies, unset_jwt_cookies
 
-from . import jwt_hooks
+from . import jwt_hooks  # noqa:F401
 from .decorators import auth_required
 from .models import TokenBlocklist, User
 from .password_utils import check_password, get_password_hash
@@ -30,7 +30,7 @@ def create_user():
 
     existing_user_with_email = User.query.filter_by(email=user['email']).first()
     if existing_user_with_email:
-        return {'message': 'User with this email already exists'}, 409
+        return {'msg': 'User with this email already exists'}, 409
 
     else:
         user['hashed_password'] = get_password_hash(user['password'])
@@ -39,7 +39,7 @@ def create_user():
         user_db = User(**user)
         app.db.session.add(user_db)
         app.db.session.commit()
-        return {'message': 'User created successfully'}, 201
+        return {'msg': 'User created successfully'}, 201
 
 
 @blueprint.route('/login', methods=['POST'])
@@ -50,16 +50,20 @@ def user_login():
 
     user = User.query.filter_by(email=email).one_or_none()
     if user and check_password(password, user.hashed_password):
-        access_token = create_access_token(identity=email)
-        return {'message': 'Login succeeded', 'access_token': access_token}
+        access_token = create_access_token(identity=user.email)
+        response = jsonify(msg='Login succeeded')
+        set_access_cookies(response, access_token)
+        return response
     else:
-        return {'message': "Login failed"}, 401
+        return {'msg': 'Login failed'}, 401
 
 
-@blueprint.route("/logout", methods=["POST"])
+@blueprint.route('/logout', methods=['POST'])
 @jwt_required()
 def user_logout():
-    jti = get_jwt()["jti"]
+    jti = get_jwt()['jti']
     app.db.session.add(TokenBlocklist(jti=jti))
     app.db.session.commit()
-    return {'message': 'Logout succeeded'}
+    response = jsonify(msg='Logout succeeded')
+    unset_jwt_cookies(response)
+    return response
