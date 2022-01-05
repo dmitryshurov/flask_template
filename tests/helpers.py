@@ -6,8 +6,6 @@ import psycopg2
 
 BASE_URL = f"http://nginx:{os.environ['BACKEND_PUBLIC_PORT']}"
 
-DATABASE_TABLES = ['users', 'user_roles', 'token_blocklist']
-
 
 def get_password_hash(password):
     num_rounds = int(os.environ['BCRYPT_NUM_ROUNDS'])
@@ -31,12 +29,6 @@ def connect_to_db():
         conn.commit()
         cur.close()
         conn.close()
-
-
-def clear_all_tables_in_database():
-    with connect_to_db() as db:
-        for table in DATABASE_TABLES:
-            db.execute(f'DELETE FROM {table}')
 
 
 def add_user_roles_to_database():

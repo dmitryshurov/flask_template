@@ -22,3 +22,5 @@ class Config:
         port=os.environ['POSTGRES_PORT'],
         database=os.environ['POSTGRES_DB'],
     )
+
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
