@@ -1,6 +1,6 @@
 + UUID as JWT identity
-- Cookies
-- CSRF Protection
++ Cookies
++ CSRF Protection
 - JWT Expiration and refresh tokens
 - DB Layer
 - No DB create and cleanup at statrup. Do that in tests properly
