@@ -131,7 +131,7 @@ def test_0001_create_users_login_logout():
     check_login_failed(USER_DATA_5)
     check_login_failed(USER_DATA_6)
     check_login_failed(USER_DATA_7)
-    # check_login_failed(USER_DATA_8)
+    check_login_failed(USER_DATA_8)
 
     response = get_users({}, check_status=False)
     assert response.status_code == 401
