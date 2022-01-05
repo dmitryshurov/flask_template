@@ -5,7 +5,9 @@ class Config:
     JSON_SORT_KEYS = False
 
     JWT_COOKIE_SECURE = True
+    JWT_COOKIE_CSRF_PROTECT = True
     JWT_SECRET_KEY = os.environ['SECRET_KEY']
+    JWT_SESSION_COOKIE = False
     JWT_TOKEN_LOCATION = ['cookies']
 
     SQLALCHEMY_DATABASE_URI = 'postgresql://{user}:{password}@{host}:{port}/{database}'.format(
