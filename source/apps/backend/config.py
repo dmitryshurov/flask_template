@@ -11,9 +11,9 @@ class Config:
     JWT_SESSION_COOKIE = False
     JWT_TOKEN_LOCATION = ['cookies']
 
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=1)
-    JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
-    JWT_REFRESH_TOKEN_BEFORE = timedelta(hours=1)
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=int(os.environ['JWT_ACCESS_TOKEN_EXPIRES']))
+    JWT_ACCESS_TOKEN_REFRESH_DEADLINE = timedelta(minutes=int(os.environ['JWT_ACCESS_TOKEN_REFRESH_DEADLINE']))
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(minutes=int(os.environ['JWT_REFRESH_TOKEN_EXPIRES']))
 
     SQLALCHEMY_DATABASE_URI = 'postgresql://{user}:{password}@{host}:{port}/{database}'.format(
         user=os.environ['POSTGRES_USER'],
