@@ -1,5 +1,13 @@
-from flask import Blueprint, current_app as app, jsonify, request
-from flask_jwt_extended import create_access_token, get_jwt, jwt_required, set_access_cookies, unset_jwt_cookies
+from flask import Blueprint
+from flask import current_app as app
+from flask import jsonify, request
+from flask_jwt_extended import (
+    create_access_token,
+    get_jwt,
+    jwt_required,
+    set_access_cookies,
+    unset_jwt_cookies
+)
 
 from . import callbacks  # noqa:F401
 from .decorators import auth_required
